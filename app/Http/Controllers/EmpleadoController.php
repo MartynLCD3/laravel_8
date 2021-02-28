@@ -36,6 +36,10 @@ class EmpleadoController extends Controller
     public function store(Request $request)
     {
         $datosEmpleado = request()->except("_token");
+        //verificar si se está insertando una fotografia
+        if($request->hasFile("Foto")){
+            $datosEmpleado["Foto"]=$request->file("Foto")->store("uploads","public");
+        }
         //Llamar al modelo
         Empleado::insert($datosEmpleado);
         return response()->json($datosEmpleado);
