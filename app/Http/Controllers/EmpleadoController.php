@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Empleado;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EmpleadoController extends Controller
 {
@@ -14,7 +15,8 @@ class EmpleadoController extends Controller
      */
     public function index()
     {
-        return view("empleado.index");
+        $datos["empleados"]=Empleado::paginate(5);
+        return view("empleado.index",$datos);
     }
 
     /**
@@ -62,9 +64,11 @@ class EmpleadoController extends Controller
      * @param  \App\Models\Empleado  $empleado
      * @return \Illuminate\Http\Response
      */
-    public function edit(Empleado $empleado)
+    public function edit($id)
     {
-        //return view("empleado.edit");
+        // Recibiendo los datos para ser actualizados posteriormente con update.
+        $empleado=Empleado::findOrFail($id);
+        return view("empleado.edit", compact("empleado"));
     }
 
     /**
@@ -74,9 +78,21 @@ class EmpleadoController extends Controller
      * @param  \App\Models\Empleado  $empleado
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Empleado $empleado)
+    public function update(Request $request, $id)
     {
-        //
+        $datosEmpleado = request()->except(["_token","_method"]);
+        // Actualización de foto
+        if($request->hasFile("Foto")){
+            // verificación de usuario
+            $empleado=Empleado::findOrFail($id);
+            Storage::delete("/public".$empleado->Foto);
+            $datosEmpleado["Foto"]=$request->file("Foto")->store("uploads","public");
+        }
+        
+        Empleado::where("id","=",$id)->update($datosEmpleado);
+        //Retornar los datos actualizados.
+        $empleado=Empleado::findOrFail($id);
+        return view("empleado.edit", compact("empleado"));
     }
 
     /**
@@ -85,8 +101,9 @@ class EmpleadoController extends Controller
      * @param  \App\Models\Empleado  $empleado
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Empleado $empleado)
+    public function destroy($id)
     {
-        //
+        Empleado::destroy($id);
+        return redirect('empleado');
     }
 }
