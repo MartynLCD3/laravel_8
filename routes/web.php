@@ -15,7 +15,7 @@ use App\Http\Controllers\EmpleadoController; // Para invocar el controlador y ha
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth');
 });
 
 
@@ -30,4 +30,10 @@ Route::get("/empleado/create",[EmpleadoController::class,"create"]);
 */
 // Acceder a todos los métodos - ejecutar php artisan route:list
 
-Route::resource("empleado",EmpleadoController::class);
+Route::resource("empleado",EmpleadoController::class)->middleware('auth');
+Auth::routes(['register'=>false,'reset'=>false]);
+Route::get('/home', [EmpleadoController::class, 'index'])->name('home');
+
+Route::group(['middleware' => 'auth'], function(){
+    Route::get('/',[EmpleadoController::class, 'index'])->name('home');
+});
